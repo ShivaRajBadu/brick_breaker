@@ -3,12 +3,15 @@ import 'dart:ui';
 import 'package:brick_breaker/src/components/level.dart';
 import 'package:brick_breaker/src/config.dart';
 import 'package:flame/components.dart';
+import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 
-class BrickBreaker extends FlameGame with HasCollisionDetection {
+class BrickBreaker extends FlameGame
+    with HasCollisionDetection, HasKeyboardHandlerComponents, TapDetector {
   BrickBreaker();
 
   late CameraComponent cam;
+  Level level = Level();
   @override
   Color backgroundColor() {
     return const Color(0xFF211f30);
@@ -16,7 +19,6 @@ class BrickBreaker extends FlameGame with HasCollisionDetection {
 
   @override
   FutureOr<void> onLoad() {
-    Level level = Level();
     cam = CameraComponent.withFixedResolution(
       world: level,
       width: gameWidth,
@@ -27,5 +29,11 @@ class BrickBreaker extends FlameGame with HasCollisionDetection {
     addAll([cam, level]);
 
     return super.onLoad();
+  }
+
+  @override
+  void onTap() {
+    level.startGame();
+    super.onTap();
   }
 }

@@ -1,5 +1,7 @@
 import 'package:brick_breaker/src/brick_breaker.dart';
 import 'package:brick_breaker/src/components/bat.dart';
+import 'package:brick_breaker/src/components/brick.dart';
+import 'package:brick_breaker/src/components/level.dart';
 import 'package:brick_breaker/src/components/play_area.dart';
 import 'package:brick_breaker/src/config.dart';
 import 'package:flame/collisions.dart';
@@ -20,7 +22,7 @@ class Ball extends CircleComponent
               ..color = const Color(0xff1e6091)
               ..style = PaintingStyle.fill);
   Vector2 velocity = Vector2.zero();
-  double ballSpeed = 0.2;
+  double ballSpeed = 0.4;
 
   final rand = math.Random();
   @override
@@ -43,32 +45,34 @@ class Ball extends CircleComponent
     super.onCollisionStart(intersectionPoints, other);
     if (other is PlayArea) {
       if (intersectionPoints.first.y <= 8 && velocity.y < 0) {
-        print('calledY<=0');
-
         velocity.y = -velocity.y;
       } else if (intersectionPoints.first.x <= 8 && velocity.x < 0) {
-        print('calledX<=0');
         velocity.x = -velocity.x;
       } else if (intersectionPoints.first.x >= gameWidth - 8 &&
           velocity.x > 0) {
-        print('called  X>=gameWidth');
         velocity.x = -velocity.x;
       } else if (intersectionPoints.first.y >= gameHeight - 8 &&
           velocity.y > 0) {
-        print('called  Y>=gameHeight');
-
         add(RemoveEffect(
           delay: 0.35,
+          onComplete: () => game.level.playState = PlayState.gameOver,
         ));
-      } else {
-        print('called  else');
-        velocity = Vector2.zero();
       }
     } else if (other is Bat) {
-      ballSpeed += 0.05;
-      velocity = Vector2(velocity.x * 1.2, -velocity.y * 1.2);
+      velocity = Vector2(velocity.x, -velocity.y);
       velocity.x = velocity.x +
           (position.x - other.position.x) / other.size.x * game.size.x * 0.3;
+    } else if (other is Brick) {
+      if (position.y < other.position.y - other.size.y / 2) {
+        velocity.y = -velocity.y;
+      } else if (position.y > other.position.y + other.size.y / 2) {
+        velocity.y = -velocity.y;
+      } else if (position.x < other.position.x) {
+        velocity.x = -velocity.x;
+      } else if (position.x > other.position.x) {
+        velocity.x = -velocity.x;
+      }
+      velocity.setFrom(velocity * difficultyModifier); // To here.
     }
   }
 }
